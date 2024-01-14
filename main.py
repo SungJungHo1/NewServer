@@ -16,36 +16,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get('/')
-def mach_UserName(name):
+@app.get('/check_User')
+def mach_UserName(Number):
 
-    temp = name
-    check_User = Find_Data(temp)
+    check_User = Find_Data(Number)
 
     return check_User
 
 @app.get('/Log')
-def Call_Log(name,balance):
-
-    AccountName = name
-    AccountBalance = balance
-    Make_Log(AccountName,AccountBalance)
-    return "sds"
-
-@app.get('/Deposit')
-def Add_Deposit(name,UNIX_Time,time,Deposit):
-
-    AccountName = name
-    UNIX__Time = UNIX_Time
-    AccountBalance = Deposit
-    Make_Deposit(AccountName,UNIX__Time,time,AccountBalance)
-    return "sds"
-
-@app.get('/Find_Deposit')
-def Finds_Deposit(name):
-
-    AccountName = name
-    UNIX_Time = Find_Deposit(AccountName)
-    return str(UNIX_Time)
-
-    
+def Call_Log(AccountNumber,time,profit,balance):
+    insert_trading_log(AccountNumber,time,profit,balance)

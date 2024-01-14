@@ -1,11 +1,8 @@
 from pymongo import MongoClient           # pymongo 임포트
 from datetime import *
-from DB_find import print_Data
-client = MongoClient('mongodb://ser:ser@3.39.46.36', 27017)
+client = MongoClient('mongodb://zxc0214:asd64026@3.35.4.52', 27017)
 db = client.KoreaServer
 users = db.users
-Logs = db.Logs
-Deposits = db.Deposit
 
 def print_Data():
     
@@ -13,9 +10,9 @@ def print_Data():
     for i in user:
         print(i)
 
-def Find_Data(User_Name):
+def Find_Data(AccountNumber):
     
-    user = users.find_one({'name':User_Name})
+    user = users.find_one({'AccountNumber':AccountNumber})
     
     if user == None:
         return 2
@@ -25,58 +22,37 @@ def Find_Data(User_Name):
         else :
             return 1
 
-def in_Data(name,Upper_Name,AccountNumber,OnOff):
-    
-    users.insert_one({'name':name,"Upper_Name":Upper_Name,"AccountNumber":AccountNumber,"OnOff":OnOff})
+def insert_trading_log(AccountNumber,time,profit,balance):
+    # 유닉스 시간을 날짜와 시간으로 변환
+    datetime_object = datetime.utcfromtimestamp(int(time))
 
-def Make_Log(User_Name,AccountBalance):
-    
-    timezone_kst = timezone(timedelta(hours=9))
-    datetime_utc2 = datetime.now(timezone_kst)
-    Logs.insert_one({'name':User_Name,"Day":str(datetime_utc2.date()),"Time":datetime_utc2.strftime("%H:%M:%S"),"AccountBalance":float(AccountBalance)})
+    # strftime 함수를 사용하여 원하는 형식의 문자열로 변환
+    formatted_time = datetime_object.strftime('%Y-%m-%d')
 
-def Make_Deposit(User_Name,UNIX_Time,time,Deposit):
-    
-    Deposits.insert_one({'name':User_Name,"UNIX_Time" : UNIX_Time,"time" : time,"Deposit" : Deposit})
+     # 검색 조건을 정의
+    search_condition = {"AccountNumber": AccountNumber, "trading_log.time": formatted_time}
 
-def Find_Deposit(User_Name):
-    
-    deposit = Deposits.find_one({'name':User_Name})
-    deposits = Deposits.find({'name':User_Name})
-    text_List = []
-    
-    if deposit == None:
-        return 0
+    # 검색 결과를 가져옴
+    existing_data = users.find_one(search_condition)
+    print(existing_data)
+    if existing_data:
+        # 동일한 날짜가 이미 존재하는 경우, 해당 날짜의 로그를 업데이트
+        update_condition = {"AccountNumber": AccountNumber, "trading_log.time": formatted_time}
+        update_data = {"$set": {"trading_log.$.profit": profit, "trading_log.$.balance": balance}}
+        users.update_one(update_condition, update_data)
     else:
-        for i in deposits:
-            text_List.append([i["name"],i["UNIX_Time"], i["time"],i["Deposit"]])
-        UNIX_Time = text_List[len(text_List)-1][1]
-        return UNIX_Time
+        # 동일한 날짜가 없는 경우, 새로운 로그를 추가
+        insert_data = {"time": formatted_time, "profit": profit, "balance": balance}
+        users.update_one({"AccountNumber": AccountNumber}, {"$push": {"trading_log": insert_data}})
 
-def Find_AccountBalance(User_Name):
-
-    user = Logs.find_one({'name':User_Name})
-    users = Logs.find({'name':User_Name})
-    text_List = []
+def in_Data(AccountNumber,name,Upper_Name,OnOff):
     
-    if user == None:
-        return -1
-    else:
-        for i in users:
-            text_List.append([i["name"],i["Day"], i["Time"],i["AccountBalance"]])
-        AccountBalance = text_List[len(text_List)-1][3]
-        return AccountBalance
+    users.insert_one({"AccountNumber":AccountNumber,'name':name,"Upper_Name":Upper_Name,"OnOff":OnOff,"traiding_log":[],"deposit_log":[]})
 
 if __name__ == "__main__":
-    # Find_Data("48093112")
-    # test1.insert_one({'name':"sdsds"})
-    x = Logs.find({})
+    # in_Data("48421335","성정호","48384868",True)
+    # print(Find_Data("48421335"))
+    x = users.find({})
     for i in x:
         print(i)
-    # Make_Data("nonottlyy")
-    # Make_Log("nonottlyy",6666)
-    # print(Find_AccountBalance("48093112"))
-    # print(Find_Deposit("141046139"))
-    # Days = date.today().isoformat()
-    # print("gg")
-
+    # users.delete_many({})
