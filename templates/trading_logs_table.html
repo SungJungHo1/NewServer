@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trading Logs</title>
+</head>
+<body>
+    <h1>Trading Logs</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Profit</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for trading_log in trading_logs %}
+                <tr>
+                    <td>{{ trading_log.time }}</td>
+                    <td>{{ trading_log.profit }}</td>
+                    <td>{{ trading_log.balance }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/">Back to Home</a>
+</body>
+</html>

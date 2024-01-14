@@ -1,0 +1,35 @@
+<!-- templates/member_details.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Details</title>
+</head>
+<body>
+    <h1>Member Details</h1>
+    <h2>Account Number: {{ member_details.AccountNumber }}</h2>
+    <h3>Name: {{ member_details.name }}</h3>
+    <h3>Upper Name: {{ member_details.Upper_Name }}</h3>
+
+    <h2>Trading Logs</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Profit</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in trading_logs %}
+                <tr>
+                    <td>{{ log.time }}</td>
+                    <td>{{ log.profit }}</td>
+                    <td>{{ log.balance }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

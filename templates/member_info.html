@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Member Information</title>
+</head>
+<body>
+    <h1>Member Information</h1>
+    {% if member_info %}
+        <p>Account Number: {{ member_info.AccountNumber }}</p>
+        <p>Name: {{ member_info.name }}</p>
+        <p>Upper Name: {{ member_info.Upper_Name }}</p>
+        <p>Status: {% if member_info.OnOff %}Active{% else %}Inactive{% endif %}</p>
+        <!-- Display other member details as needed -->
+    {% else %}
+        <p>Member not found.</p>
+    {% endif %}
+    <a href="/">Back to Home</a>
+</body>
+</html>

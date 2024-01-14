@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Members</title>
+</head>
+<body>
+    <h1>All Members</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Upper Name</th>
+                <th>Status</th>
+                <th>Account Number</th>
+                <th>Latest Trading Log</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member_info in members_info %}
+                <tr>
+                    <td>{{ member_info.name }}</td>
+                    <td>{{ member_info.Upper_Name }}</td>
+                    <td>{% if member_info.OnOff %}Active{% else %}Inactive{% endif %}</td>
+                    <td>{{ member_info.AccountNumber }}</td>
+                    <td>{% if member_info.trading_log %}{{ member_info.trading_log[-1] }}{% endif %}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/">Back to Home</a>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!-- templates/register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+    <h1>Register</h1>
+    <form method="post" action="/register/">
+        <label for="AccountNumber">Account Number:</label>
+        <input type="number" name="AccountNumber" id="AccountNumber" required><br>
+
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required><br>
+
+        <label for="Upper_Name">Upper Name:</label>
+        <input type="number" name="Upper_Name" id="Upper_Name" required><br>
+
+        <button type="submit">Register</button>
+    </form>
+    <a href="/">Go to main</a>
+
+    {% if error %}
+        <script>
+            alert("{{ error }}");
+            window.location.href = "/register";
+        </script>
+    {% endif %}
+    <script>
+        function validateForm() {
+            var accountNumber = document.getElementById('AccountNumber').value;
+            var upperName = document.getElementById('Upper_Name').value;
+
+            if (!/^\d+$/.test(accountNumber)) {
+                alert('Please enter only digits for Account Number');
+                return false;
+            }
+
+            if (!/^\d+$/.test(upperName)) {
+                alert('Please enter only digits for Upper Name');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>

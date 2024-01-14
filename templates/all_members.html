@@ -1,0 +1,38 @@
+<!-- templates/all_members.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Members</title>
+</head>
+<body>
+    <h1>All Members</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Name</th>
+                <th>Upper Name</th>
+                <th>Latest Trading Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in members %}
+                <tr>
+                    <td><a href="/member/{{ member.AccountNumber }}/">{{ member.AccountNumber }}</a></td>
+                    <td>{{ member.name }}</td>
+                    <td>{{ member.Upper_Name }}</td>
+                    <td>
+                        {% if member.trading_log %}
+                            {{ member.trading_log[-1].time }} - Profit: {{ member.trading_log[-1].profit }}, Balance: {{ member.trading_log[-1].balance }}
+                        {% else %}
+                            No trading data
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
