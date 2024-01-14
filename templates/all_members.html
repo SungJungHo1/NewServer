@@ -1,20 +1,22 @@
 <!-- templates/all_members.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Members</title>
+    <title>전체회원</title>
 </head>
 <body>
-    <h1>All Members</h1>
+    <h1>전체회원</h1>
     <table border="1">
         <thead>
             <tr>
-                <th>Account Number</th>
-                <th>Name</th>
-                <th>Upper Name</th>
-                <th>Latest Trading Data</th>
+                <th>계좌번호</th>
+                <th>이름</th>
+                <th>상위번호</th>
+                <th>활성화</th>
+                <th>마지막 거래 정보</th>
+                <th>액션</th>
             </tr>
         </thead>
         <tbody>
@@ -23,16 +25,40 @@
                     <td><a href="/member/{{ member.AccountNumber }}/">{{ member.AccountNumber }}</a></td>
                     <td>{{ member.name }}</td>
                     <td>{{ member.Upper_Name }}</td>
+                    <td id="status_{{ member.AccountNumber }}">{{ "활성화" if member.OnOff else "비활성화" }}</td>
                     <td>
                         {% if member.trading_log %}
                             {{ member.trading_log[-1].time }} - Profit: {{ member.trading_log[-1].profit }}, Balance: {{ member.trading_log[-1].balance }}
                         {% else %}
-                            No trading data
+                            정보없음
                         {% endif %}
+                    </td>
+                    <td>
+                        <button onclick="toggleStatus('{{ member.AccountNumber }}')">
+                            변경
+                        </button>
                     </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <script>
+        async function toggleStatus(accountNumber) {
+            // 서버에 POST 요청을 보내서 상태 변경
+            const response = await fetch(`/toggle_status/${accountNumber}`, {
+                method: 'POST',
+            });
+
+            // 서버의 응답을 확인하여 성공하면 화면 갱신
+            const result = await response.json();
+            if (result.status === 'success') {
+                const statusElement = document.getElementById(`status_${accountNumber}`);
+                statusElement.innerText = result.new_status ? '활성화' : '비활성화';
+            } else {
+                alert('상태 변경 실패');
+            }
+        }
+    </script>
 </body>
 </html>

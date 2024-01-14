@@ -1,26 +1,26 @@
 <!-- templates/register.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>등록페이지</title>
 </head>
 <body>
-    <h1>Register</h1>
+    <h1>등록페이지</h1>
     <form method="post" action="/register/">
-        <label for="AccountNumber">Account Number:</label>
+        <label for="AccountNumber">계좌번호:</label>
         <input type="number" name="AccountNumber" id="AccountNumber" required><br>
 
-        <label for="name">Name:</label>
+        <label for="name">이름:</label>
         <input type="text" name="name" id="name" required><br>
 
-        <label for="Upper_Name">Upper Name:</label>
+        <label for="Upper_Name">상위계좌번호:</label>
         <input type="number" name="Upper_Name" id="Upper_Name" required><br>
 
-        <button type="submit">Register</button>
+        <button type="submit">등록</button>
     </form>
-    <a href="/">Go to main</a>
+    <a href="/">메인으로</a>
 
     {% if error %}
         <script>

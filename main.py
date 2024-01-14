@@ -35,6 +35,26 @@ class RegisterForm(BaseModel):
     name: str = Field(..., description="Name")
     Upper_Name: str = Field(..., description="Upper Name")
 
+# 클라이언트에서 호출할 엔드포인트 추가
+@app.post("/toggle_status/{account_number}")
+async def toggle_status(account_number: str):
+    # MongoDB에서 해당 계좌번호의 사용자 정보 조회
+    user = collection.find_one({"AccountNumber": account_number})
+
+    if user:
+        # 사용자의 OnOff 필드 값을 토글
+        new_status = not user["OnOff"]
+
+        # MongoDB에서 사용자 정보 업데이트
+        collection.update_one(
+            {"AccountNumber": account_number},
+            {"$set": {"OnOff": new_status}}
+        )
+
+        return {"status": "success", "new_status": new_status}
+
+    return {"status": "error", "message": "User not found"}
+
 @app.get("/", response_class=HTMLResponse)
 async def main_page(request: Request):
     return templates.TemplateResponse("main_page.html", {"request": request})
