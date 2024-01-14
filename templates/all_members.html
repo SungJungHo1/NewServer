@@ -28,7 +28,7 @@
                     <td id="status_{{ member.AccountNumber }}">{{ "활성화" if member.OnOff else "비활성화" }}</td>
                     <td>
                         {% if member.trading_log %}
-                            {{ member.trading_log[-1].time }} - Profit: {{ member.trading_log[-1].profit }}, Balance: {{ member.trading_log[-1].balance }}
+                            {{ member.trading_log[-1].time }} - 수익: {{ member.trading_log[-1].profit }}, 잔액: {{ member.trading_log[-1].balance }}
                         {% else %}
                             정보없음
                         {% endif %}
