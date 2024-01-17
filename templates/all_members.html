@@ -142,6 +142,10 @@
                 alert("취소되었습니다.");
 
             }
+            if(confirmActive){
+                alert("완료되었습니다. 새로고침해주세요");
+            }
+            
             
         }
         async function deleteMember(accountNumber) {
@@ -160,10 +164,13 @@
 
                     // 페이지 새로고침
                     location.reload();
-                    alert("완료되었습니다. 새로고침해주세요");
+                    
                 } else {
                     alert('회원 삭제 실패');
                 }
+            }
+            if(confirmDelete){
+                alert("완료되었습니다. 새로고침해주세요");
             }
         }
     </script>
