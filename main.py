@@ -1,6 +1,6 @@
 from DB_findKorea import *
 from datetime import *
-from fastapi import FastAPI, Request, Form,HTTPException
+from fastapi import FastAPI, Request, Form,HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -18,6 +18,23 @@ client = MongoClient('mongodb://zxc0214:asd64026@3.35.4.52', 27017)
 db = client.KoreaServer
 collection  = db.users
 
+class WebSocketManager:
+    def __init__(self):
+        self.connections = set()
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.connections.add(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.connections.remove(websocket)
+
+    async def broadcast(self, message: dict):
+        for connection in self.connections:
+            await connection.send_text(message)
+
+manager = WebSocketManager()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -33,6 +50,7 @@ app.add_middleware(
 class RegisterForm(BaseModel):
     AccountNumber: str = Field(..., description="Account Number")
     name: str = Field(..., description="Name")
+    phone_number: str = Field(..., description="phone number")
     Upper_Name: str = Field(..., description="Upper Name")
 
 # 클라이언트에서 호출할 엔드포인트 추가
@@ -74,6 +92,22 @@ async def all_members(request: Request):
 
     return templates.TemplateResponse("all_members.html", {"request": request, "members": all_members})
 
+@app.post("/delete_member/{account_number}")
+async def delete_member(account_number: str):
+    # MongoDB에서 해당 계좌번호의 사용자 정보 조회
+    user = collection.find_one({"AccountNumber": account_number})
+
+    if user:
+        # 사용자 정보 삭제
+        collection.delete_one({"AccountNumber": account_number})
+
+        # WebSocket을 통해 클라이언트에게 삭제 이벤트를 알림
+        await manager.broadcast({"event": "member_deleted", "account_number": account_number})
+
+        return {"status": "success", "message": "Member deleted"}
+
+    return {"status": "error", "message": "User not found"}
+
 @app.get("/member/{account_number}/", response_class=HTMLResponse)
 async def member_details(request: Request, account_number: str):
     # Get member details and all trading logs from MongoDB
@@ -96,6 +130,7 @@ async def register(
     AccountNumber: str = Form(...),
     name: str = Form(...),
     Upper_Name: str = Form(...),
+    phone_number:str = Form(...),
 ):
     # Check if AccountNumber already exists
     if collection.find_one({"AccountNumber": AccountNumber}):
@@ -106,6 +141,7 @@ async def register(
         "AccountNumber": str(AccountNumber),
         "name": name,
         "Upper_Name": str(Upper_Name),
+        "phone_number":str(phone_number),
         "OnOff": True,
         "trading_log": [],
         "deposit_log": [],

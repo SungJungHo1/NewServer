@@ -5,11 +5,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Details</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 80%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td {
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
     <h1>상세정보</h1>
     <h2>계좌번호: {{ member_details.AccountNumber }}</h2>
     <h3>이름: {{ member_details.name }}</h3>
+    <h3>전화번호: {{ member_details.phone_number }}</h3> <!-- Added phone number here -->
     <h3>상위번호: {{ member_details.Upper_Name }}</h3>
 
     <h2>전체로그</h2>

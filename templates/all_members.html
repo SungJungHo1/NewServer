@@ -5,6 +5,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전체회원</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 2em; /* Larger font size */
+            margin-top: 20px; /* Adjusted margin for spacing */
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        button {
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* 활성화 상태에 대한 스타일링 */
+        .status_true {
+            color: #3498db; /* '활성화'인 경우 파란색 */
+            font-weight: bold; /* Thicker font */
+        }
+
+        .status_false {
+            color: #e74c3c; /* '비활성화'인 경우 빨간색 */
+            font-weight: bold; /* Thicker font */
+        }
+    </style>
 </head>
 <body>
     <h1>전체회원</h1>
@@ -14,6 +83,7 @@
                 <th>계좌번호</th>
                 <th>이름</th>
                 <th>상위번호</th>
+                <th>전화번호</th> <!-- 추가된 부분 -->
                 <th>활성화</th>
                 <th>마지막 거래 정보</th>
                 <th>액션</th>
@@ -25,7 +95,10 @@
                     <td><a href="/member/{{ member.AccountNumber }}/">{{ member.AccountNumber }}</a></td>
                     <td>{{ member.name }}</td>
                     <td>{{ member.Upper_Name }}</td>
-                    <td id="status_{{ member.AccountNumber }}">{{ "활성화" if member.OnOff else "비활성화" }}</td>
+                    <td>{{ member.phone_number }}</td> <!-- 추가된 부분 -->
+                    <td class="{% if member.OnOff %}status_true{% else %}status_false{% endif %}">
+                        {{ "활성화" if member.OnOff else "비활성화" }}
+                    </td>
                     <td>
                         {% if member.trading_log %}
                             {{ member.trading_log[-1].time }} - 수익: {{ member.trading_log[-1].profit }}, 잔액: {{ member.trading_log[-1].balance }}
@@ -37,6 +110,9 @@
                         <button onclick="toggleStatus('{{ member.AccountNumber }}')">
                             변경
                         </button>
+                        <button onclick="deleteMember('{{ member.AccountNumber }}')">
+                            삭제
+                        </button>
                     </td>
                 </tr>
             {% endfor %}
@@ -46,17 +122,48 @@
     <script>
         async function toggleStatus(accountNumber) {
             // 서버에 POST 요청을 보내서 상태 변경
-            const response = await fetch(`/toggle_status/${accountNumber}`, {
-                method: 'POST',
-            });
+            const confirmActive = confirm("활성화 유무를 변경 하시겠습니까?");
+            if (confirmActive){
 
-            // 서버의 응답을 확인하여 성공하면 화면 갱신
-            const result = await response.json();
-            if (result.status === 'success') {
-                const statusElement = document.getElementById(`status_${accountNumber}`);
-                statusElement.innerText = result.new_status ? '활성화' : '비활성화';
-            } else {
-                alert('상태 변경 실패');
+                const response = await fetch(`/toggle_status/${accountNumber}`, {
+                method: 'POST',
+                });
+                // 서버의 응답을 확인하여 성공하면 화면 갱신
+                const result = await response.json();
+                if (result.status === 'success') {
+                    const statusElement = document.getElementById(`status_${accountNumber}`);
+                    statusElement.innerText = result.new_status ? '활성화' : '비활성화';
+                } else {
+                    alert('상태 변경 실패');
+                }
+                alert("완료되었습니다. 새로고침해주세요");
+            }else{
+
+                alert("취소되었습니다.");
+
+            }
+            
+        }
+        async function deleteMember(accountNumber) {
+            const confirmDelete = confirm("정말로 이 회원을 삭제하시겠습니까?");
+            if (confirmDelete) {
+                // 서버에 POST 요청을 보내서 회원 삭제
+                const response = await fetch(`/delete_member/${accountNumber}`, {
+                    method: 'POST',
+                });
+
+                // 서버의 응답을 확인하여 성공하면 화면 갱신
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // WebSocket을 통해 클라이언트에게 삭제 이벤트를 알림
+                    await manager.broadcast({"event": "member_deleted", "account_number": accountNumber});
+
+                    // 페이지 새로고침
+                    location.reload();
+                    alert("완료되었습니다. 새로고침해주세요");
+                } else {
+                    alert('회원 삭제 실패');
+                }
             }
         }
     </script>
