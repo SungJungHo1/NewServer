@@ -14,7 +14,7 @@ thread_Count = 0
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-client = MongoClient('mongodb://zxc0214:asd64026@3.35.4.52', 27017)
+client = MongoClient('mongodb://admin2:asd64026@13.209.74.215', 27017)
 db = client.KoreaServer
 collection  = db.users
 
