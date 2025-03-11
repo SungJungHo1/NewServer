@@ -196,54 +196,45 @@ def Call_Log(AccountNumber, time, profit, balance):
 
 
 @app.get("/check_indicator")
-async def check_indicator(date: str, hour: str, min: str):
+async def check_indicator(date: str, hour: str = "00", min: str = "00"):
     try:
-        # MT4에서 받은 날짜 형식(YYYY.MM.DD)을 MongoDB 형식(YYYY/MM/DD)으로 변환
-        date = date.replace(".", "/")
-        # print(f"\n=== Indicator Check Debug ===")
-        # print(f"Checking date: {date}")
+        # MongoDB에서 해당 날짜의 모든 지표 검색
+        search_date = date.replace(".", "/")
+        client = MongoClient("mongodb://admin2:asd64026@13.209.74.215:27017/")
+        db = client["KoreaServer"]
+        collection = db["economic_calendar"]
 
-        # MongoDB에서 해당 날짜의 경제지표 데이터 조회
-        indicator_data = economic_db.economic_calendar.find_one({"date": date})
+        # 해당 날짜의 모든 이벤트 찾기
+        event = collection.find_one({"date": search_date})
+        events = event.get("events")
+        if events:
+            print(events)
+            # 모든 이벤트의 시간과 이름을 리스트로 만들기
 
-        # print(f"Found data: {indicator_data is not None}")
-
-        if indicator_data and indicator_data.get("events"):
-            events = indicator_data.get("events", [])
-            # print(f"Found {len(events)} events")
-
-            # 현재 시간과 가장 가까운 이벤트 찾기
-            current_hour = int(hour)
-            current_min = int(min)
-            closest_event = None
-            min_time_diff = float("inf")
-
+            unique_times = {}
+            # 각 이벤트를 순회하면서 시간이 중복되지 않는 것만 저장
             for event in events:
-                event_time = event.get("time", "")
-                if event_time:
-                    event_hour, event_min = map(int, event_time.split(":"))
-                    time_diff = (event_hour - current_hour) * 60 + (
-                        event_min - current_min
-                    )
+                time = event.get("time", "")
+                # 해당 시간이 아직 없거나, 현재 이벤트의 중요도가 더 높은 경우에만 저장
+                if time not in unique_times:
+                    unique_times[time] = {
+                        "event_time": time,
+                        "event_name": event.get("event_name", ""),
+                        "importance": event.get("importance", ""),
+                    }
 
-                    # 앞으로 다가올 이벤트 중 가장 가까운 것 선택
-                    if 0 <= time_diff < min_time_diff:
-                        min_time_diff = time_diff
-                        closest_event = event
+            # 딕셔너리 값들을 리스트로 변환
+            event_list = list(unique_times.values())
 
-            if closest_event:
-                return {
-                    "result": "true",
-                    "event_time": closest_event["time"],
-                    "event_name": closest_event["event_name"],
-                    "minutes_until": min_time_diff,
-                }
+            print(f"Found {len(event_list)} unique events")
+            return {"result": "true", "events": event_list}
 
+        print("No events found")
         return {"result": "false"}
 
     except Exception as e:
-        # print(f"Error in check_indicator: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error in check_indicator: {str(e)}")
+        return {"result": "false", "error": str(e)}
 
 
 def main():
