@@ -200,17 +200,17 @@ async def check_indicator(date: str, hour: str, min: str):
     try:
         # MT4에서 받은 날짜 형식(YYYY.MM.DD)을 MongoDB 형식(YYYY/MM/DD)으로 변환
         date = date.replace(".", "/")
-        print(f"\n=== Indicator Check Debug ===")
-        print(f"Checking date: {date}")
+        # print(f"\n=== Indicator Check Debug ===")
+        # print(f"Checking date: {date}")
 
         # MongoDB에서 해당 날짜의 경제지표 데이터 조회
         indicator_data = economic_db.economic_calendar.find_one({"date": date})
 
-        print(f"Found data: {indicator_data is not None}")
+        # print(f"Found data: {indicator_data is not None}")
 
         if indicator_data and indicator_data.get("events"):
             events = indicator_data.get("events", [])
-            print(f"Found {len(events)} events")
+            # print(f"Found {len(events)} events")
 
             # 현재 시간과 가장 가까운 이벤트 찾기
             current_hour = int(hour)
@@ -242,7 +242,7 @@ async def check_indicator(date: str, hour: str, min: str):
         return {"result": "false"}
 
     except Exception as e:
-        print(f"Error in check_indicator: {str(e)}")
+        # print(f"Error in check_indicator: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

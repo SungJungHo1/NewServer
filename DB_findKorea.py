@@ -39,7 +39,7 @@ def insert_trading_log(AccountNumber, time, profit, balance):
 
     # 검색 결과를 가져옴
     existing_data = users.find_one(search_condition)
-    print(existing_data)
+    # print(existing_data)
     if existing_data:
         # 동일한 날짜가 이미 존재하는 경우, 해당 날짜의 로그를 업데이트
         update_condition = {
@@ -130,7 +130,7 @@ def get_main_indicators():
         return []
 
     except Exception as e:
-        print(f"Error getting indicators: {str(e)}")
+        # print(f"Error getting indicators: {str(e)}")
         return []
 
 

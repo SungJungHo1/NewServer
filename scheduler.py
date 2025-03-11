@@ -15,12 +15,13 @@ def collect_daily_data():
             current_time = int(datetime.now().timestamp())
             # 수집된 데이터를 시스템 계정에 저장
             insert_trading_log("SYSTEM", current_time, 0, len(indicators))
-            print(f"[{datetime.now()}] 일일 데이터 수집 완료: {len(indicators)}개 지표")
-        else:
-            print(f"[{datetime.now()}] 수집된 지표 없음")
+        #     print(f"[{datetime.now()}] 일일 데이터 수집 완료: {len(indicators)}개 지표")
+        # else:
+        #     print(f"[{datetime.now()}] 수집된 지표 없음")
 
     except Exception as e:
-        print(f"[{datetime.now()}] 데이터 수집 중 오류 발생: {str(e)}")
+        # print(f"[{datetime.now()}] 데이터 수집 중 오류 발생: {str(e)}")
+        pass
 
 
 def run_scheduler():
@@ -33,5 +34,5 @@ def run_scheduler():
 
 
 if __name__ == "__main__":
-    print("데이터 수집 스케줄러 시작...")
+    # print("데이터 수집 스케줄러 시작...")
     run_scheduler()
