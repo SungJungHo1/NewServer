@@ -202,31 +202,24 @@ async def check_indicator(date: str, hour: str = "00", min: str = "00"):
         search_date = date.replace(".", "/")
         client = MongoClient("mongodb://admin2:asd64026@13.209.74.215:27017/")
         db = client["KoreaServer"]
-        collection = db["economic_calendar"]
+        collection = db["economic_indicators"]
 
         # 해당 날짜의 모든 이벤트 찾기
-        event = collection.find_one({"date": search_date})
-        events = event.get("events")
-        if events:
-            print(events)
-            # 모든 이벤트의 시간과 이름을 리스트로 만들기
+        events = list(collection.find({"date": search_date}))
 
-            unique_times = {}
-            # 각 이벤트를 순회하면서 시간이 중복되지 않는 것만 저장
+        if events:
+            # 모든 이벤트의 시간과 이름을 리스트로 만들기
+            event_list = []
             for event in events:
-                time = event.get("time", "")
-                # 해당 시간이 아직 없거나, 현재 이벤트의 중요도가 더 높은 경우에만 저장
-                if time not in unique_times:
-                    unique_times[time] = {
-                        "event_time": time,
-                        "event_name": event.get("event_name", ""),
+                event_list.append(
+                    {
+                        "event_time": event.get("time", ""),
+                        "event_name": event.get("name", ""),
                         "importance": event.get("importance", ""),
                     }
+                )
 
-            # 딕셔너리 값들을 리스트로 변환
-            event_list = list(unique_times.values())
-
-            print(f"Found {len(event_list)} unique events")
+            print(f"Found {len(events)} events")
             return {"result": "true", "events": event_list}
 
         print("No events found")
@@ -238,9 +231,18 @@ async def check_indicator(date: str, hour: str = "00", min: str = "00"):
 
 
 def main():
+    # 스케줄러를 즉시 한 번 직접 실행
+    from scheduler import run_scheduler_once  # 새로운 함수 import
+
+    # 일회성 실행 함수 호출
+    run_scheduler_once()
     # 스케줄러를 별도 쓰레드로 실행
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()
 
     # 기존 코드 유지
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=80)
+
+
+if __name__ == "__main__":
+    main()
