@@ -202,7 +202,7 @@ async def check_indicator(date: str, hour: str = "00", min: str = "00"):
         search_date = date.replace(".", "/")
         client = MongoClient("mongodb://admin2:asd64026@13.209.74.215:27017/")
         db = client["KoreaServer"]
-        collection = db["economic_indicators"]
+        collection = db["economic_calendar"]
 
         # 해당 날짜의 모든 이벤트 찾기
         events = list(collection.find({"date": search_date}))
@@ -210,7 +210,8 @@ async def check_indicator(date: str, hour: str = "00", min: str = "00"):
         if events:
             # 모든 이벤트의 시간과 이름을 리스트로 만들기
             event_list = []
-            for event in events:
+            for event in events[0]["events"]:
+                print(event)
                 event_list.append(
                     {
                         "event_time": event.get("time", ""),
