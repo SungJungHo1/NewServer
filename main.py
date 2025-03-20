@@ -211,7 +211,6 @@ async def check_indicator(date: str, hour: str = "00", min: str = "00"):
             # 모든 이벤트의 시간과 이름을 리스트로 만들기
             event_list = []
             for event in events[0]["events"]:
-                print(event)
                 event_list.append(
                     {
                         "event_time": event.get("time", ""),
