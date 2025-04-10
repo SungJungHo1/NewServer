@@ -38,7 +38,11 @@ bool eventTriggered = false;         // 이벤트가 트리거 되었는지 여�
 
 // API 서버 정보
 string apiHost = "www.mmser.p-e.kr";  // API 서버 주소
-
+enum actionType{
+   selfType,
+   autoType,
+   manualType
+};
 // MongoDB 연결 정보
 string mongoHost = "13.209.74.215";
 int mongoPort = 27017;
@@ -282,9 +286,10 @@ int OnInit() {
    CheckAndUpdateEconomicEvents();
 
    // 3) 버튼 생성
-   CreateToggleButton("startStopButton", 100, 10, "시작", clrRed);
-   CreateButton("closeButton", 100, 30, "전체 청산", clrGray);
-   CreateButton("resumeButton", 100, 50, "거래재개", clrGray);  // 거래재개 버튼 추가
+   CreateToggleButton("startStopButton",200, 10, "시작", clrRed);
+   CreateButton("closeButton",200, 50, "전체 청산", clrGray);
+   CreateButton("resumeButton",200, 90, "거래재개", clrGray);  // 거래재개 버튼 추가
+   CreateButton("rsiEntryButton",200, 130, "강제진입", clrGray); // RSI 진입 버튼 추가
 
    Print("OnInit 완료. 계좌번호=", AccountNumber());
 
@@ -382,7 +387,8 @@ void CreateButton(string buttonName, int x, int y, string text, color buttonColo
    ObjectSetInteger(0, buttonName, OBJPROP_FONTSIZE, 12);  // 글자 크기
    ObjectSetInteger(0, buttonName, OBJPROP_HIDDEN, false);  // 숨기지 않음
    ObjectSetString(0, buttonName, OBJPROP_TEXT, text);  // 버튼에 표시할 텍스트
-   ObjectSetInteger(0, buttonName, OBJPROP_WIDTH, 100);  // 버튼 너비
+   ObjectSetInteger(0, buttonName, OBJPROP_XSIZE, 100);  // 버튼 너비
+   ObjectSetInteger(0, buttonName, OBJPROP_YSIZE, 30);  // 버튼 너비
    ObjectSetInteger(0, buttonName, OBJPROP_BORDER_TYPE, BORDER_RAISED);  // 테두리 스타일
    ObjectSetInteger(0, buttonName, OBJPROP_BACK, true);  // 배경 활성화
 }
@@ -399,6 +405,7 @@ void CreateToggleButton(string buttonName, int x, int y, string text, color butt
 //| Expert tick function                                              |
 //+------------------------------------------------------------------+
 void OnTick() {
+   double rsi = 0; // rsi 변수 선언을 여기로 이동하고 초기화
    CheckAndUpdateEconomicEvents();
    // 버튼 클릭 확인 (거래재개 버튼)
    if (ObjectGetInteger(0, "resumeButton", OBJPROP_STATE) == 1) {
@@ -407,7 +414,43 @@ void OnTick() {
       ObjectSetInteger(0, "resumeButton", OBJPROP_STATE, 0);  // 버튼 상태 초기화
       Print("거래가 수동으로 재개되었습니다.");
    }
-   // 버튼 클릭 확인
+   if (rsi >= 50) {
+      // 숏 진입 예상
+      ObjectSetString(0, "rsiEntryButton", OBJPROP_TEXT, "숏 진입"); // 텍스트 변경
+      ObjectSetInteger(0, "rsiEntryButton", OBJPROP_BGCOLOR, clrMistyRose); // 연한 빨간색으로 배경색 변경
+   } else {
+      // 롱 진입 예상
+      ObjectSetString(0, "rsiEntryButton", OBJPROP_TEXT, "롱 진입"); // 텍스트 변경
+      ObjectSetInteger(0, "rsiEntryButton", OBJPROP_BGCOLOR, clrPowderBlue); // 연한 파란색으로 배경색 변경
+   }
+   // RSI 진입 버튼 클릭 확인
+   if (ObjectGetInteger(0, "rsiEntryButton", OBJPROP_STATE) == 1) {
+      rsi = iRSI(NULL, 0, 14, PRICE_CLOSE, 0); // 'double' 제거, 값만 할당
+      if(rsi >= 50) {
+         // 숏 포지션 첫 진입
+         OpenPrice = Bid;
+         firstOpenPrice = Bid;
+         OrderSend(Symbol(), OP_SELL, initialLotSize, Bid, 3, 0, 0, "", magicNumber, 0, Red);
+         OrderSend(Symbol(), OP_BUY, initialLotSize, Ask, 3, 0, 0, "", magicNumber, 0, Blue);
+         firstEntry = false; // 첫 진입 이후는 RSI를 사용하지 않음
+         OpenedPosition = -1;
+         currentTradeCount++;
+      }
+      else{
+         // 롱 포지션 첫 진입
+         OpenPrice = Ask;
+         firstOpenPrice = Ask;
+         OrderSend(Symbol(), OP_BUY, initialLotSize, Ask, 3, 0, 0, "", magicNumber, 0, Blue);
+         OrderSend(Symbol(), OP_SELL, initialLotSize, Bid, 3, 0, 0, "", magicNumber, 0, Red);
+         firstEntry = false; // 첫 진입 이후는 RSI를 사용하지 않음
+         OpenedPosition = 1;
+         currentTradeCount++;
+      }
+      
+      ObjectSetInteger(0, "rsiEntryButton", OBJPROP_STATE, 0); // 버튼 상태 초기화
+   }
+
+   // 버튼 클릭 확인 (시작/정지 버튼)
    if (ObjectGetInteger(0, "startStopButton", OBJPROP_STATE) == 1) {
       // 시작/정지 버튼 클릭 시
       tradingEnabled = !tradingEnabled;  // 거래 활성화/비활성화 토글
@@ -532,7 +575,7 @@ void OnTick() {
       return;  // 거래가 정지되면 아래 로직 실행 안 함
    }
 
-   double rsi = iRSI(NULL, 0, 14, PRICE_CLOSE, 0);
+   rsi = iRSI(NULL, 0, 14, PRICE_CLOSE, 0); // 'double' 제거, 값만 할당 (여기가 556 라인 근처일 것으로 예상)
    
       // 매직넘버 히스토리 오늘 수익 계산
    double todayMagicProfit = GetTodayMagicProfit(magicNumber);
@@ -648,7 +691,7 @@ void OnTick() {
             hedgecount = hedgecount + addHedgeCount;
          }
          if(priceDifference >= pointDistance && currentTradeCount < maxTrades) {
-            AddMartingaleOrders(OP_BUY);  // 롱 포지션에 추가 진입
+            AddMartingaleOrders(OP_BUY, autoType);  // 롱 포지션에 추가 진입, enum 이름 제거
          }
       }
       else if(OpenedPosition < 0) {
@@ -667,20 +710,22 @@ void OnTick() {
             hedgecount = hedgecount + addHedgeCount;
          }
          if(priceDifference >= pointDistance && currentTradeCount < maxTrades) {
-            AddMartingaleOrders(OP_SELL); // 숏 포지션에 추가 진입
+            AddMartingaleOrders(OP_SELL, autoType); // 숏 포지션에 추가 진입, enum 이름 제거
          }
       }
    }
 }
 
 // 포지션 추가 진입 (마틴게일 방식)
-void AddMartingaleOrders(int orderType) {
+void AddMartingaleOrders(int orderType, actionType entryType) {
    double currentPrice = (orderType == OP_BUY) ? Ask : Bid;
    
    // 마틴게일 방식으로 로트 증가
    double nextLotSize = initialLotSize * MathPow(martingaleFactor, currentTradeCount); // 기존 로트 크기에서 배수 적용
    OrderSend(Symbol(), orderType, nextLotSize, currentPrice, 3, 0, 0, "", magicNumber, 0, Yellow);
-   OpenPrice = currentPrice; // 새로운 진입가 설정
+   if (entryType == autoType){
+      OpenPrice = currentPrice; // 새로운 진입가 설정
+   }
 }
 
 // 포지션 존재 여부 확인
