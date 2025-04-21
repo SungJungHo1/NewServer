@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 from pymongo import MongoClient
 from pydantic import BaseModel, Field
 from typing import Annotated
+from contextlib import contextmanager
 
 # import threading, time
 
@@ -21,10 +22,26 @@ thread_Count = 0
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-client = MongoClient("mongodb://admin2:asd64026@13.209.74.215:27017/?authSource=admin")
+client = MongoClient(
+    "mongodb://admin2:asd64026@13.209.74.215:27017/?authSource=admin",
+    maxPoolSize=10,  # 연결 풀 크기 제한
+    connectTimeoutMS=30000,
+)
 db = client.KoreaServer
 collection = db.users
 economic_db = client.KoreaServer  # test에서 KoreaServer로 변경
+
+
+@contextmanager
+def get_db():
+    try:
+        db = client.KoreaServer
+        yield db
+    except Exception as e:
+        print(f"Database error: {e}")
+        raise
+    finally:
+        pass  # 연결은 풀에서 관리되므로 명시적으로 닫을 필요 없음
 
 
 class WebSocketManager:
@@ -195,35 +212,32 @@ def Call_Log(AccountNumber, time, profit, balance):
     insert_trading_log(AccountNumber, time, profit, balance)
 
 
+# check_indicator 엔드포인트 수정
 @app.get("/check_indicator")
 async def check_indicator(date: str, hour: str = "00", min: str = "00"):
     try:
-        # MongoDB에서 해당 날짜의 모든 지표 검색
-        search_date = date.replace(".", "/")
-        client = MongoClient("mongodb://admin2:asd64026@13.209.74.215:27017/")
-        db = client["KoreaServer"]
-        collection = db["economic_calendar"]
+        with get_db() as db:
+            collection = db["economic_calendar"]
+            search_date = date.replace(".", "/")
 
-        # 해당 날짜의 모든 이벤트 찾기
-        events = list(collection.find({"date": search_date}))
+            events = list(collection.find({"date": search_date}))
 
-        if events:
-            # 모든 이벤트의 시간과 이름을 리스트로 만들기
-            event_list = []
-            for event in events[0]["events"]:
-                event_list.append(
-                    {
-                        "event_time": event.get("time", ""),
-                        "event_name": event.get("name", ""),
-                        "importance": event.get("importance", ""),
-                    }
-                )
+            if events:
+                event_list = []
+                for event in events[0]["events"]:
+                    event_list.append(
+                        {
+                            "event_time": event.get("time", ""),
+                            "event_name": event.get("name", ""),
+                            "importance": event.get("importance", ""),
+                        }
+                    )
 
-            print(f"Found {len(events)} events")
-            return {"result": "true", "events": event_list}
+                print(f"Found {len(events)} events")
+                return {"result": "true", "events": event_list}
 
-        print("No events found")
-        return {"result": "false"}
+            print("No events found")
+            return {"result": "false"}
 
     except Exception as e:
         print(f"Error in check_indicator: {str(e)}")
