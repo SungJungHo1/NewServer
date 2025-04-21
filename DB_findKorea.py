@@ -1,7 +1,7 @@
 from pymongo import MongoClient  # pymongo 임포트
 from datetime import *
 
-client = MongoClient("mongodb://admin2:asd64026@13.209.74.215:27017/?authSource=admin")
+client = MongoClient("mongodb://admin2:asd64026@13.209.64.113:27017/?authSource=admin")
 db = client.KoreaServer
 users = db.users
 

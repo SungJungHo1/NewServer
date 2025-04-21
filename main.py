@@ -5,9 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
+from pymongo.server_api import ServerApi
 from pydantic import BaseModel, Field
 from typing import Annotated
 from contextlib import contextmanager
+import time
 
 # import threading, time
 
@@ -23,25 +26,50 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 client = MongoClient(
-    "mongodb://admin2:asd64026@13.209.74.215:27017/?authSource=admin",
-    maxPoolSize=10,  # 연결 풀 크기 제한
+    "mongodb://admin2:asd64026@13.209.64.113:27017/?authSource=admin",
+    maxPoolSize=10,
     connectTimeoutMS=30000,
+    socketTimeoutMS=45000,
+    serverSelectionTimeoutMS=30000,
+    waitQueueTimeoutMS=30000,
+    retryWrites=True,
+    server_api=ServerApi("1"),
 )
-db = client.KoreaServer
-collection = db.users
-economic_db = client.KoreaServer  # test에서 KoreaServer로 변경
+
+
+def get_mongo_client():
+    max_retries = 3
+    retry_delay = 5  # 5초
+
+    for attempt in range(max_retries):
+        try:
+            # 연결 테스트
+            client.admin.command("ping")
+            return client
+        except ConnectionFailure as e:
+            if attempt < max_retries - 1:
+                print(f"MongoDB 연결 실패 (시도 {attempt + 1}/{max_retries}): {str(e)}")
+                time.sleep(retry_delay)
+            else:
+                raise
 
 
 @contextmanager
 def get_db():
     try:
+        client = get_mongo_client()
         db = client.KoreaServer
         yield db
     except Exception as e:
         print(f"Database error: {e}")
         raise
     finally:
-        pass  # 연결은 풀에서 관리되므로 명시적으로 닫을 필요 없음
+        pass
+
+
+db = client.KoreaServer
+collection = db.users
+economic_db = client.KoreaServer  # test에서 KoreaServer로 변경
 
 
 class WebSocketManager:
@@ -201,10 +229,12 @@ async def register(
 
 @app.get("/check_User")
 def mach_UserName(Number):
-
-    check_User = Find_Data(Number)
-
-    return check_User
+    try:
+        check_User = Find_Data(Number)
+        return check_User
+    except Exception as e:
+        print(f"Error in check_User: {str(e)}")
+        return {"error": str(e), "status": "error"}
 
 
 @app.get("/Log")
@@ -215,33 +245,41 @@ def Call_Log(AccountNumber, time, profit, balance):
 # check_indicator 엔드포인트 수정
 @app.get("/check_indicator")
 async def check_indicator(date: str, hour: str = "00", min: str = "00"):
-    try:
-        with get_db() as db:
-            collection = db["economic_calendar"]
-            search_date = date.replace(".", "/")
+    max_retries = 3
+    retry_delay = 5
 
-            events = list(collection.find({"date": search_date}))
+    for attempt in range(max_retries):
+        try:
+            with get_db() as db:
+                collection = db["economic_calendar"]
+                search_date = date.replace(".", "/")
 
-            if events:
-                event_list = []
-                for event in events[0]["events"]:
-                    event_list.append(
-                        {
-                            "event_time": event.get("time", ""),
-                            "event_name": event.get("name", ""),
-                            "importance": event.get("importance", ""),
-                        }
-                    )
+                events = list(collection.find({"date": search_date}))
 
-                print(f"Found {len(events)} events")
-                return {"result": "true", "events": event_list}
+                if events:
+                    event_list = []
+                    for event in events[0]["events"]:
+                        event_list.append(
+                            {
+                                "event_time": event.get("time", ""),
+                                "event_name": event.get("name", ""),
+                                "importance": event.get("importance", ""),
+                            }
+                        )
 
-            print("No events found")
-            return {"result": "false"}
+                    print(f"Found {len(events)} events")
+                    return {"result": "true", "events": event_list}
 
-    except Exception as e:
-        print(f"Error in check_indicator: {str(e)}")
-        return {"result": "false", "error": str(e)}
+                print("No events found")
+                return {"result": "false"}
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"시도 {attempt + 1}/{max_retries} 실패: {str(e)}")
+                time.sleep(retry_delay)
+            else:
+                print(f"Error in check_indicator: {str(e)}")
+                return {"result": "false", "error": str(e)}
 
 
 def main():
@@ -254,8 +292,10 @@ def main():
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()
 
-    # 기존 코드 유지
-    uvicorn.run(app, host="0.0.0.0", port=80)
+    # uvicorn 실행 방식 변경
+    import uvicorn
+
+    uvicorn.run("main:app", host="0.0.0.0", port=80, workers=1, reload=False)
 
 
 if __name__ == "__main__":
