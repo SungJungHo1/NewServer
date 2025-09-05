@@ -1,0 +1,31 @@
+# Virtual Environment
+venv/
+*.pyc
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Frida
+frida-server-*
