@@ -81,7 +81,7 @@ Templates in `/templates/` provide:
 ## MongoDB Connection
 The application connects to MongoDB using:
 ```
-mongodb://admin2:asd64026@13.209.64.113:27017/?authSource=admin
+mongodb://admin2:asd64026@54.116.116.54:27017/?authSource=admin
 ```
 
 Connection includes retry logic with 3 attempts and 5-second delays for reliability.

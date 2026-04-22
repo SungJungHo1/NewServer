@@ -95,6 +95,37 @@
       ]
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "daily_metrics.py",
+      "accessCount": 2,
+      "lastAccessed": 1776863103718,
+      "type": "file"
+    },
+    {
+      "path": "indicator_api.py",
+      "accessCount": 2,
+      "lastAccessed": 1776863111374,
+      "type": "file"
+    },
+    {
+      "path": "newserver.py",
+      "accessCount": 2,
+      "lastAccessed": 1776863115508,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 2,
+      "lastAccessed": 1776863130184,
+      "type": "file"
+    },
+    {
+      "path": "DB_findKorea.py",
+      "accessCount": 1,
+      "lastAccessed": 1776863048740,
+      "type": "file"
+    }
+  ],
   "userDirectives": []
 }

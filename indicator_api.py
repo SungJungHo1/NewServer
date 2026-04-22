@@ -6,7 +6,7 @@ from typing import Optional
 app = FastAPI()
 
 # MongoDB 연결 설정
-MONGO_URI = "mongodb://admin2:asd64026@13.209.74.215:27017/?authSource=admin"
+MONGO_URI = "mongodb://admin2:asd64026@54.116.116.54:27017/?authSource=admin"
 client = MongoClient(MONGO_URI)
 db = client.test
 
