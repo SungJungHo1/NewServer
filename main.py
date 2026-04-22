@@ -26,7 +26,7 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 client = MongoClient(
-    "mongodb://admin2:asd64026@13.209.64.113:27017/?authSource=admin",
+    "mongodb://admin2:asd64026@54.116.116.54:27017/?authSource=admin",
     maxPoolSize=10,
     connectTimeoutMS=30000,
     socketTimeoutMS=45000,

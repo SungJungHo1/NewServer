@@ -1,0 +1,100 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1776862402695,
+  "projectRoot": "d:\\자료\\루팅\\frida-launcher\\NewServer",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "templates": {
+      "path": "templates",
+      "purpose": null,
+      "fileCount": 9,
+      "lastAccessed": 1776862402677,
+      "keyFiles": [
+        "all_members.html",
+        "main_logged_in.html",
+        "main_page.html",
+        "members_table.html",
+        "member_details.html"
+      ]
+    },
+    "venv": {
+      "path": "venv",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1776862402677,
+      "keyFiles": [
+        "pyvenv.cfg"
+      ]
+    },
+    "__pycache__": {
+      "path": "__pycache__",
+      "purpose": null,
+      "fileCount": 12,
+      "lastAccessed": 1776862402678,
+      "keyFiles": [
+        "daily_metrics.cpython-311.pyc",
+        "DB_find.cpython-311.pyc",
+        "DB_find.cpython-38.pyc",
+        "DB_findKorea.cpython-311.pyc",
+        "DB_findKorea.cpython-38.pyc"
+      ]
+    },
+    "venv\\Lib": {
+      "path": "venv\\Lib",
+      "purpose": "Library code",
+      "fileCount": 0,
+      "lastAccessed": 1776862402678,
+      "keyFiles": []
+    },
+    "venv\\Scripts": {
+      "path": "venv\\Scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 16,
+      "lastAccessed": 1776862402679,
+      "keyFiles": [
+        "activate",
+        "activate.bat",
+        "Activate.ps1"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}
